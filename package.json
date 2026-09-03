@@ -1,0 +1,24 @@
+{
+  "name": "@stellar-primitives/monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production-grade, modular Rust building blocks for Soroban smart contracts on Stellar",
+  "scripts": {
+    "build": "turbo run build",
+    "build:contracts": "cargo build --target wasm32-unknown-unknown --release",
+    "test": "turbo run test",
+    "test:contracts": "cargo test --all",
+    "lint": "turbo run lint",
+    "dev:docs": "turbo run dev --filter=@stellar-primitives/docs",
+    "deploy:testnet": "bash ./scripts/deploy.sh testnet"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

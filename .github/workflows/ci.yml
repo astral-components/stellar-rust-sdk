@@ -1,0 +1,56 @@
+name: Soroban Primitives CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test-rust-contracts:
+    name: Run Rust Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo Dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run Cargo Unit Tests
+        run: cargo test --all
+
+      - name: Build WASM Target Binaries
+        run: cargo build --target wasm32-unknown-unknown --release
+
+  sdk-and-docs-check:
+    name: Build TypeScript SDK & Docs Site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install Monorepo Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck SDK
+        run: pnpm --filter @stellar-primitives/sdk run lint
+
+      - name: Build Documentation Site
+        run: pnpm --filter @stellar-primitives/docs run build
