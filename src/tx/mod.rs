@@ -1,11 +1,13 @@
 //! Transaction construction, operations, envelopes, and XDR.
 
 pub mod builder;
+pub mod envelope;
 pub mod operations;
 pub mod types;
 mod xdr;
 
 pub use builder::TransactionBuilder;
+pub use envelope::{DecoratedSignature, TransactionEnvelope};
 pub use types::{Memo, TimeBounds, Transaction};
 
 /// One stroop is `10^-7` XLM.
