@@ -11,6 +11,7 @@
 //! - [`keypair`] — Ed25519 key generation, seed import, and payload signing
 //! - [`network`] — public / testnet / futurenet passphrases and network IDs
 //! - [`horizon`] — asynchronous Horizon HTTP client and endpoint builders
+//! - [`rpc`] — Soroban JSON-RPC client (`simulateTransaction`, ledger entries, events)
 //! - [`tx`] — transaction builder, operations, envelopes, and XDR serialization
 //!
 //! Enable the `contract-types` feature to re-export the `soroban-sdk` crate.
@@ -24,19 +25,10 @@ pub mod errors;
 pub mod horizon;
 pub mod keypair;
 pub mod network;
+pub mod rpc;
 pub mod tx;
 
 pub use errors::SdkError;
-
-/// Soroban RPC URL constants (JSON-RPC client lands in a later commit).
-pub mod rpc {
-    /// Official Soroban RPC URL for SDF Testnet.
-    pub const TESTNET_URL: &str = "https://soroban-testnet.stellar.org";
-    /// Official Soroban RPC URL for the Stellar Public Network.
-    pub const PUBLIC_URL: &str = "https://mainnet.sorobanrpc.com";
-    /// Official Soroban RPC URL for SDF Futurenet.
-    pub const FUTURENET_URL: &str = "https://rpc-futurenet.stellar.org";
-}
 
 /// Re-export of `soroban-sdk` (feature `contract-types`).
 #[cfg(feature = "contract-types")]
