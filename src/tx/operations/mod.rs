@@ -1,7 +1,11 @@
 //! Transaction operations.
 
+mod claimable_balances;
+mod offers;
 mod payment;
 
+pub use claimable_balances::{ClaimClaimableBalance, ClaimPredicate, Claimant, CreateClaimableBalance};
+pub use offers::{ManageBuyOffer, ManageSellOffer, Price};
 pub use payment::{CreateAccount, Payment};
 
 use crate::tx::types::Asset;
@@ -14,6 +18,14 @@ pub enum Operation {
     CreateAccount(CreateAccount),
     /// Payment of native or issued assets.
     Payment(Payment),
+    /// Create a claimable balance.
+    CreateClaimableBalance(CreateClaimableBalance),
+    /// Claim a claimable balance.
+    ClaimClaimableBalance(ClaimClaimableBalance),
+    /// Create / update / delete a sell offer.
+    ManageSellOffer(ManageSellOffer),
+    /// Create / update / delete a buy offer.
+    ManageBuyOffer(ManageBuyOffer),
 }
 
 impl Operation {
@@ -22,16 +34,24 @@ impl Operation {
         match self {
             Self::CreateAccount(_) => 0,
             Self::Payment(_) => 1,
+            Self::ManageSellOffer(_) => 3,
+            Self::ManageBuyOffer(_) => 12,
+            Self::CreateClaimableBalance(_) => 14,
+            Self::ClaimClaimableBalance(_) => 15,
         }
     }
 
     /// Encode the operation (including optional source account = none).
     pub fn write_xdr(&self, w: &mut XdrWriter) {
-        w.write_bool(false);
+        w.write_bool(false); // sourceAccount not present
         w.write_i32(self.discriminant());
         match self {
             Self::CreateAccount(op) => op.write_xdr(w),
             Self::Payment(op) => op.write_xdr(w),
+            Self::CreateClaimableBalance(op) => op.write_xdr(w),
+            Self::ClaimClaimableBalance(op) => op.write_xdr(w),
+            Self::ManageSellOffer(op) => op.write_xdr(w),
+            Self::ManageBuyOffer(op) => op.write_xdr(w),
         }
     }
 }
@@ -54,22 +74,21 @@ mod tests {
 
     #[test]
     fn discriminants_match_stellar_xdr() {
+        // Values from Stellar `OperationType` in Stellar-transaction.x
+        assert_eq!(Operation::CreateAccount(CreateAccount {
+            destination: [0u8; 32],
+            starting_balance: 1,
+        }).discriminant(), 0);
         assert_eq!(
-            Operation::CreateAccount(CreateAccount {
-                destination: [0u8; 32],
-                starting_balance: 1,
+            Operation::ManageBuyOffer(ManageBuyOffer {
+                selling: Asset::Native,
+                buying: Asset::Native,
+                buy_amount: 1,
+                price: Price { n: 1, d: 1 },
+                offer_id: 0,
             })
             .discriminant(),
-            0
-        );
-        assert_eq!(
-            Operation::Payment(Payment {
-                destination: [0u8; 32],
-                asset: Asset::Native,
-                amount: 1,
-            })
-            .discriminant(),
-            1
+            12
         );
     }
 }
