@@ -1,4 +1,4 @@
-import { Contract, rpc, scValToNative } from '@stellar/stellar-sdk';
+import { Contract, nativeToScVal, rpc, scValToNative } from '@stellar/stellar-sdk';
 
 export interface MultisigProposalData {
   id: bigint;
@@ -23,9 +23,12 @@ export class MultisigClient {
    * Query proposal details by ID
    */
   async getProposal(proposalId: number): Promise<MultisigProposalData | null> {
-    const tx = this.contract.call('get_proposal', scValToNative(proposalId));
+    const tx = this.contract.call(
+      'get_proposal',
+      nativeToScVal(proposalId, { type: 'u32' }),
+    );
     const result = await this.server.simulateTransaction(tx);
-    if (rpc.Api.isSimulationSuccess(result)) {
+    if (rpc.Api.isSimulationSuccess(result) && result.result) {
       return scValToNative(result.result.retval) as MultisigProposalData;
     }
     return null;

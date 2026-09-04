@@ -1,4 +1,4 @@
-import { Contract, rpc, scValToNative } from '@stellar/stellar-sdk';
+import { Contract, nativeToScVal, rpc, scValToNative } from '@stellar/stellar-sdk';
 
 export interface VestingScheduleData {
   sender: string;
@@ -24,9 +24,12 @@ export class VestingClient {
    * Fetch currently vested token balance for a schedule ID
    */
   async getVestedAmount(scheduleId: number): Promise<bigint> {
-    const tx = this.contract.call('get_vested_amount', scValToNative(scheduleId));
+    const tx = this.contract.call(
+      'get_vested_amount',
+      nativeToScVal(scheduleId, { type: 'u32' }),
+    );
     const result = await this.server.simulateTransaction(tx);
-    if (rpc.Api.isSimulationSuccess(result)) {
+    if (rpc.Api.isSimulationSuccess(result) && result.result) {
       return BigInt(scValToNative(result.result.retval));
     }
     return 0n;
@@ -36,9 +39,12 @@ export class VestingClient {
    * Query details of a specific vesting schedule
    */
   async getSchedule(scheduleId: number): Promise<VestingScheduleData | null> {
-    const tx = this.contract.call('get_schedule', scValToNative(scheduleId));
+    const tx = this.contract.call(
+      'get_schedule',
+      nativeToScVal(scheduleId, { type: 'u32' }),
+    );
     const result = await this.server.simulateTransaction(tx);
-    if (rpc.Api.isSimulationSuccess(result)) {
+    if (rpc.Api.isSimulationSuccess(result) && result.result) {
       return scValToNative(result.result.retval) as VestingScheduleData;
     }
     return null;

@@ -32,6 +32,7 @@ impl LedgerKey {
 
 /// Ledger entry returned by `getLedgerEntries`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct LedgerEntry {
     /// Key XDR (base64).
     #[serde(default)]
@@ -77,6 +78,7 @@ struct GetLedgerEntriesParams {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct GetLedgerEntriesResult {
     #[serde(default)]
     entries: Option<Vec<LedgerEntry>>,

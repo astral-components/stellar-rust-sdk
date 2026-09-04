@@ -77,6 +77,7 @@ impl GetHealthResponse {
 
 /// `getNetwork` result.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GetNetworkResponse {
     /// Friendbot URL when the network is a test network.
     #[serde(default)]
@@ -90,6 +91,7 @@ pub struct GetNetworkResponse {
 
 /// `getLatestLedger` result.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct GetLatestLedgerResponse {
     /// Latest ledger id (hex).
     #[serde(default)]
@@ -120,5 +122,17 @@ mod tests {
             status: "healthy".into()
         }
         .is_healthy());
+    }
+
+    #[test]
+    fn network_response_reads_rpc_camel_case() {
+        let json = r#"{
+            "friendbotUrl": "https://friendbot.stellar.org",
+            "passphrase": "Test SDF Network ; September 2015",
+            "protocolVersion": 21
+        }"#;
+        let net: GetNetworkResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(net.friendbot_url.as_deref(), Some("https://friendbot.stellar.org"));
+        assert_eq!(net.protocol_version, Some(21));
     }
 }
