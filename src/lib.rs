@@ -8,6 +8,7 @@
 //!
 //! - [`errors`] — unified [`SdkError`] taxonomy for HTTP, XDR, StrKey, and RPC failures
 //! - [`address`] — StrKey wrappers for `G…`, `S…`, `C…`, and `M…` encodings
+//! - [`keypair`] — Ed25519 key generation, seed import, and payload signing
 //!
 //! Enable the `contract-types` feature to re-export the `soroban-sdk` crate.
 
@@ -17,6 +18,7 @@
 
 pub mod address;
 pub mod errors;
+pub mod keypair;
 
 pub use errors::SdkError;
 
