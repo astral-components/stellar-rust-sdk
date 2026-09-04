@@ -145,6 +145,16 @@ impl std::fmt::Display for SecretSeed {
     }
 }
 
+impl Drop for SecretSeed {
+    fn drop(&mut self) {
+        self.bytes.fill(0);
+        // Best-effort: `String::clear` drops the UTF-8 view; the heap buffer
+        // is not guaranteed to be overwritten without `unsafe`.
+        self.encoded.clear();
+        self.encoded.shrink_to_fit();
+    }
+}
+
 /// Contract identifier (`C…`).
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub struct ContractId {

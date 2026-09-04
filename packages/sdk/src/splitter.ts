@@ -20,7 +20,7 @@ export class SplitterClient {
   async getShares(): Promise<RecipientShare[]> {
     const tx = this.contract.call('get_shares');
     const result = await this.server.simulateTransaction(tx);
-    if (rpc.Api.isSimulationSuccess(result)) {
+    if (rpc.Api.isSimulationSuccess(result) && result.result) {
       return scValToNative(result.result.retval) as RecipientShare[];
     }
     return [];

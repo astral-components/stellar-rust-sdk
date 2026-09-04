@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Resource usage reported by simulation.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct SimulateTransactionResult {
     /// CPU instructions consumed.
     #[serde(default)]
@@ -20,6 +21,7 @@ pub struct SimulateTransactionResult {
 
 /// Restore preamble when archived entries must be restored first.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RestorePreamble {
     /// Suggested transaction data XDR.
     #[serde(default)]
@@ -31,6 +33,7 @@ pub struct RestorePreamble {
 
 /// `simulateTransaction` result.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SimulateResponse {
     /// Latest ledger observed.
     #[serde(default)]
@@ -53,8 +56,8 @@ pub struct SimulateResponse {
     /// Restore preamble.
     #[serde(default)]
     pub restore_preamble: Option<RestorePreamble>,
-    /// State changes / footprint summary when provided as `result`.
-    #[serde(default)]
+    /// State changes / footprint summary when provided as `result` or `cost`.
+    #[serde(default, alias = "cost")]
     pub result: Option<SimulateTransactionResult>,
 }
 
@@ -101,6 +104,7 @@ impl SimulateResponse {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct SimulateParams<'a> {
     transaction: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -108,6 +112,7 @@ struct SimulateParams<'a> {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ResourceConfig {
     instruction_leeway: u64,
 }
@@ -170,6 +175,43 @@ mod tests {
         assert_eq!(resp.memory_bytes(), 2000);
         assert_eq!(resp.min_resource_fee_stroops(), 12345);
         assert_eq!(resp.footprint_xdr(), Some("AAAA"));
+    }
+
+    #[test]
+    fn simulate_params_use_rpc_camel_case() {
+        let params = SimulateParams {
+            transaction: "AAAA",
+            resource_config: Some(ResourceConfig {
+                instruction_leeway: 1_000,
+            }),
+        };
+        let v = serde_json::to_value(&params).unwrap();
+        assert_eq!(v["transaction"], "AAAA");
+        assert_eq!(v["resourceConfig"]["instructionLeeway"], 1_000);
+        assert!(v.get("resource_config").is_none());
+    }
+
+    #[test]
+    fn simulate_response_reads_rpc_camel_case() {
+        let json = r#"{
+            "latestLedger": 42,
+            "minResourceFee": "99",
+            "transactionData": "AABB"
+        }"#;
+        let resp: SimulateResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(resp.latest_ledger, Some(42));
+        assert_eq!(resp.min_resource_fee.as_deref(), Some("99"));
+        assert_eq!(resp.footprint_xdr(), Some("AABB"));
+    }
+
+    #[test]
+    fn simulate_response_reads_cost_alias() {
+        let json = r#"{
+            "cost": { "cpuInsns": "1000", "memBytes": "2000" }
+        }"#;
+        let resp: SimulateResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(resp.cpu_instructions(), 1000);
+        assert_eq!(resp.memory_bytes(), 2000);
     }
 
     #[test]
