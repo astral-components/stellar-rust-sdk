@@ -1,7 +1,12 @@
 //! Asynchronous Horizon REST client and endpoint builders.
 
+mod accounts;
 mod client;
 
+pub use accounts::{
+    Account, AccountFlags, AccountSigner, AccountsRequestBuilder, Balance, HorizonAccountResponse,
+    Order,
+};
 pub use client::{HorizonClient, HorizonClientBuilder};
 
 /// Official Horizon base URL for the Stellar Public Network.
