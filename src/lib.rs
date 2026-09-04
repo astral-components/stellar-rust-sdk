@@ -13,6 +13,7 @@
 //! - [`horizon`] — asynchronous Horizon HTTP client and endpoint builders
 //! - [`rpc`] — Soroban JSON-RPC client (`simulateTransaction`, ledger entries, events)
 //! - [`tx`] — transaction builder, operations, envelopes, and XDR serialization
+//! - [`soroban`] — high-level contract invoker pipeline
 //!
 //! Enable the `contract-types` feature to re-export the `soroban-sdk` crate.
 
@@ -26,6 +27,7 @@ pub mod horizon;
 pub mod keypair;
 pub mod network;
 pub mod rpc;
+pub mod soroban;
 pub mod tx;
 
 pub use errors::SdkError;
