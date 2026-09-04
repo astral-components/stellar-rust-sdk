@@ -3,6 +3,7 @@
 pub mod builder;
 pub mod operations;
 pub mod types;
+mod xdr;
 
 pub use builder::TransactionBuilder;
 pub use types::{Memo, TimeBounds, Transaction};
