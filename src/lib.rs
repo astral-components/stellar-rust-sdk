@@ -7,6 +7,7 @@
 //! ## Crate layout
 //!
 //! - [`errors`] — unified [`SdkError`] taxonomy for HTTP, XDR, StrKey, and RPC failures
+//! - [`address`] — StrKey wrappers for `G…`, `S…`, `C…`, and `M…` encodings
 //!
 //! Enable the `contract-types` feature to re-export the `soroban-sdk` crate.
 
@@ -14,6 +15,7 @@
 #![deny(missing_docs)]
 #![warn(clippy::all)]
 
+pub mod address;
 pub mod errors;
 
 pub use errors::SdkError;
