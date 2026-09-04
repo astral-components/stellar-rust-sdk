@@ -1,13 +1,17 @@
 //! Asynchronous Horizon REST client and endpoint builders.
 
 mod accounts;
+mod assets;
 mod client;
+mod pools;
 
 pub use accounts::{
     Account, AccountFlags, AccountSigner, AccountsRequestBuilder, Balance, HorizonAccountResponse,
     Order,
 };
+pub use assets::{AssetRecord, AssetsRequestBuilder, HorizonAsset};
 pub use client::{HorizonClient, HorizonClientBuilder};
+pub use pools::{LiquidityPool, LiquidityPoolReserve, PoolsRequestBuilder};
 
 /// Official Horizon base URL for the Stellar Public Network.
 pub const PUBLIC_URL: &str = "https://horizon.stellar.org";
