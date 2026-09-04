@@ -2,16 +2,15 @@
 
 mod client;
 mod entries;
+mod events;
 mod simulate;
 mod types;
 
 pub use client::RpcClient;
 pub use entries::{LedgerEntry, LedgerKey};
+pub use events::{Event, EventFilter, EventsPage, EventsRequestBuilder};
 pub use simulate::{RestorePreamble, SimulateResponse, SimulateTransactionResult};
-pub use types::{
-    GetHealthResponse, GetLatestLedgerResponse, GetNetworkResponse, RpcError, RpcRequest,
-    RpcResponse,
-};
+pub use types::{GetHealthResponse, GetLatestLedgerResponse, GetNetworkResponse, RpcError, RpcRequest, RpcResponse};
 
 /// Official Soroban RPC URL for SDF Testnet.
 pub const TESTNET_URL: &str = "https://soroban-testnet.stellar.org";
