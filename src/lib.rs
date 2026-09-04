@@ -9,6 +9,7 @@
 //! - [`errors`] — unified [`SdkError`] taxonomy for HTTP, XDR, StrKey, and RPC failures
 //! - [`address`] — StrKey wrappers for `G…`, `S…`, `C…`, and `M…` encodings
 //! - [`keypair`] — Ed25519 key generation, seed import, and payload signing
+//! - [`network`] — public / testnet / futurenet passphrases and network IDs
 //!
 //! Enable the `contract-types` feature to re-export the `soroban-sdk` crate.
 
@@ -19,8 +20,29 @@
 pub mod address;
 pub mod errors;
 pub mod keypair;
+pub mod network;
 
 pub use errors::SdkError;
+
+/// Horizon URL constants (HTTP client lands in a later commit).
+pub mod horizon {
+    /// Official Horizon base URL for the Stellar Public Network.
+    pub const PUBLIC_URL: &str = "https://horizon.stellar.org";
+    /// Official Horizon base URL for SDF Testnet.
+    pub const TESTNET_URL: &str = "https://horizon-testnet.stellar.org";
+    /// Official Horizon base URL for SDF Futurenet.
+    pub const FUTURENET_URL: &str = "https://horizon-futurenet.stellar.org";
+}
+
+/// Soroban RPC URL constants (JSON-RPC client lands in a later commit).
+pub mod rpc {
+    /// Official Soroban RPC URL for SDF Testnet.
+    pub const TESTNET_URL: &str = "https://soroban-testnet.stellar.org";
+    /// Official Soroban RPC URL for the Stellar Public Network.
+    pub const PUBLIC_URL: &str = "https://mainnet.sorobanrpc.com";
+    /// Official Soroban RPC URL for SDF Futurenet.
+    pub const FUTURENET_URL: &str = "https://rpc-futurenet.stellar.org";
+}
 
 /// Re-export of `soroban-sdk` (feature `contract-types`).
 #[cfg(feature = "contract-types")]
