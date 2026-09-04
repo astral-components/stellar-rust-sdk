@@ -1,61 +1,20 @@
 //! # Stellar Rust SDK
 //!
 //! Production-grade client library for the [Stellar](https://stellar.org) network.
-//! This crate is the native Rust SDK for Horizon REST, Soroban JSON-RPC, Ed25519
-//! key management, StrKey codecs, and typed transaction construction.
+//! The crate covers Horizon REST access, Soroban JSON-RPC, Ed25519 key management,
+//! StrKey address codecs, and typed transaction construction.
 //!
-//! Subsequent commits introduce dedicated modules for errors, addresses, keypairs,
-//! networks, Horizon, RPC, transactions, and Soroban invocation. This commit
-//! establishes the workspace crate, shared constants, and the root error surface.
+//! ## Crate layout
+//!
+//! - [`errors`] — unified [`SdkError`] taxonomy for HTTP, XDR, StrKey, and RPC failures
+//!
+//! Enable the `contract-types` feature to re-export the `soroban-sdk` crate.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 #![warn(clippy::all)]
 
-/// Placeholder error module; replaced by the full taxonomy in the next commit.
-pub mod errors {
-    //! Root SDK error type shared by all public APIs.
-
-    use thiserror::Error;
-
-    /// Top-level error returned by SDK operations.
-    #[derive(Debug, Error)]
-    pub enum SdkError {
-        /// TCP / TLS connect or request exceeded the configured timeout.
-        #[error("network timeout after {duration_ms}ms: {context}")]
-        Timeout {
-            /// Timeout budget in milliseconds.
-            duration_ms: u64,
-            /// Operation that timed out.
-            context: String,
-        },
-
-        /// Non-success HTTP status.
-        #[error("http {status}: {message}")]
-        HttpStatus {
-            /// HTTP status code.
-            status: u16,
-            /// Response body excerpt.
-            message: String,
-        },
-
-        /// Catch-all for unexpected internal conditions.
-        #[error("{0}")]
-        Message(String),
-    }
-
-    impl SdkError {
-        /// Construct a contextual [`SdkError::Message`].
-        pub fn message(msg: impl Into<String>) -> Self {
-            Self::Message(msg.into())
-        }
-
-        /// Returns `true` when the failure is a network timeout.
-        pub fn is_timeout(&self) -> bool {
-            matches!(self, Self::Timeout { .. })
-        }
-    }
-}
+pub mod errors;
 
 pub use errors::SdkError;
 
@@ -99,12 +58,5 @@ mod tests {
     fn serde_json_dependency_is_wired() {
         let value = serde_json::json!({ "horizon": TESTNET_HORIZON_URL });
         assert_eq!(value["horizon"], TESTNET_HORIZON_URL);
-    }
-
-    #[test]
-    fn stub_error_message_roundtrip() {
-        let err = SdkError::message("bootstrap");
-        assert_eq!(err.to_string(), "bootstrap");
-        assert!(!err.is_timeout());
     }
 }
