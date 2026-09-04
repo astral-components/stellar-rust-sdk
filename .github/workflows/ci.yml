@@ -28,7 +28,7 @@ jobs:
         run: cargo test --all
 
       - name: Build WASM Target Binaries
-        run: cargo build --target wasm32-unknown-unknown --release
+        run: cargo build --workspace --exclude stellar-rust-sdk --target wasm32-unknown-unknown --release
 
   sdk-and-docs-check:
     name: Build TypeScript SDK & Docs Site

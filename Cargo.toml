@@ -1,6 +1,45 @@
+[package]
+name = "stellar-rust-sdk"
+version = "0.1.0"
+authors = ["Astral Components <maintainers@astral-components.dev>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Production-grade Rust SDK for Stellar Horizon, Soroban RPC, and transaction construction"
+repository = "https://github.com/astral-components/stellar-rust-sdk"
+readme = "README.md"
+keywords = ["stellar", "soroban", "horizon", "blockchain", "sdk"]
+categories = ["api-bindings", "cryptography"]
+documentation = "https://docs.rs/stellar-rust-sdk"
+
+[lib]
+name = "stellar_rust_sdk"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+thiserror = "1"
+ed25519-dalek = { version = "2", features = ["std", "rand_core"] }
+stellar-strkey = "0.0.9"
+soroban-sdk = { version = "20.0.0", optional = true }
+sha2 = "0.10"
+rand = "0.8"
+base64 = "0.22"
+hex = "0.4"
+
+[features]
+default = []
+## Re-export `soroban-sdk` for consumers that compose on-chain types.
+contract-types = ["dep:soroban-sdk"]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
 [workspace]
 resolver = "2"
-
 members = [
     "contracts/access-control",
     "contracts/vesting",
@@ -10,10 +49,10 @@ members = [
 
 [workspace.package]
 version = "0.1.0"
-authors = ["Stellar Primitives Core Maintainers <maintainers@stellar-primitives.org>"]
+authors = ["Astral Components <maintainers@astral-components.dev>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/stellar-primitives/soroban-contracts"
+repository = "https://github.com/astral-components/stellar-rust-sdk"
 
 [profile.release]
 opt-level = "z"
