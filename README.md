@@ -1,110 +1,98 @@
-# `stellar-primitives/soroban-contracts`
+# stellar-rust-sdk
 
-> **Production-grade, modular Rust building blocks for Soroban smart contracts on Stellar.**
+> Production-grade Rust SDK for Stellar Horizon, Soroban RPC, and typed transaction construction.
 
-[![Rust CI](https://github.com/stellar-primitives/soroban-contracts/actions/workflows/ci.yml/badge.svg)](https://github.com/stellar-primitives/soroban-contracts/actions/workflows/ci.yml)
-[![Grantfox Bounties](https://img.shields.io/badge/Grantfox-Bounties_Available-5865F2?style=flat-square&logo=github)](https://grantfox.io)
-[![Drips Funding](https://img.shields.io/badge/Drips-Funded_Open_Source-00F5A0?style=flat-square)](https://drips.network)
 [![License: MIT/Apache-2.0](https://img.shields.io/badge/License-MIT_--_Apache_2.0-blue.svg)](LICENSE)
+[![Grantfox Bounties](https://img.shields.io/badge/Grantfox-Bounties_Available-5865F2?style=flat-square)](https://grantfox.io)
+[![Drips Funding](https://img.shields.io/badge/Drips-Funded_Open_Source-00F5A0?style=flat-square)](https://drips.network)
 
----
+Maintained by [Astral Components](https://github.com/astral-components) (`Astral-components/stellar-rust-sdk`).
 
-## 🚀 Overview
+## Installation
 
-`soroban-contracts` is an open-source library maintained by `stellar-primitives`. It provides secure, gas-optimized, and reusable Rust smart contracts for the Soroban smart contract platform on Stellar.
-
-Whether you are building DeFi primitives, DAO governance tools, token distribution mechanics, or fine-grained access control, these contracts serve as audited, battle-tested foundations.
-
----
-
-## 📦 Repository Structure
-
-```
-soroban-contracts/
-├── contracts/                  # Soroban Rust Contracts (Cargo Workspace)
-│   ├── vesting/                # Linear/Cliff Token Vesting & Escrow
-│   ├── multisig/               # Multi-Party Threshold Vault
-│   ├── splitter/               # Revenue & Fee Distribution (Drips-compatible)
-│   └── access-control/         # Granular Role-Based Permissions (Admin, Minter, Operator)
-├── packages/                   # Shared Client Packages & SDKs
-│   ├── sdk/                    # TypeScript SDK for interacting with contracts (@stellar/stellar-sdk)
-│   └── config/                 # Shared TypeScript & Tailwind configurations
-├── apps/                       # Web & Documentation Frontends
-│   └── docs/                   # Interactive Documentation & Playground (Next.js 14, Tailwind CSS)
-├── scripts/                    # Deployment & Developer Automation Tooling
-│   ├── deploy.sh               # Shell script for local/testnet deployment via stellar-cli
-│   └── setup-identity.sh      # Stellar keys & network setup helpers
-└── .github/                    # CI/CD and Open-Source Governance
-    ├── workflows/              # GitHub Actions (Rust tests, WASM build checks)
-    └── ISSUE_TEMPLATE/         # Grantfox bounty issue templates
+```toml
+[dependencies]
+stellar-rust-sdk = { git = "https://github.com/astral-components/stellar-rust-sdk" }
 ```
 
----
-
-## ⚙️ Quickstart & Local Development
-
-### Prerequisites
-
-- **Rust**: `rustup target add wasm32-unknown-unknown`
-- **Stellar CLI**: Install using `cargo install --locked stellar-cli --features opt`
-- **Node.js**: `v18+` and `pnpm v8+`
-
-### 1. Compile & Test Soroban Contracts
+Requires **Rust 1.75+**. HTTP clients use `reqwest` with `rustls` (no system OpenSSL).
 
 ```bash
-# Run unit tests across all smart contracts
-cargo test
-
-# Compile all contracts to release WASM binaries
-cargo build --target wasm32-unknown-unknown --release
+cargo test -p stellar-rust-sdk
+cargo run --example transfer_tokens
+cargo run --example invoke_soroban
 ```
 
-### 2. Deploy to Testnet
+Live Testnet / Friendbot checks:
 
 ```bash
-# Setup identity & request Friendbot funds
-bash ./scripts/setup-identity.sh deployer
-
-# Build and deploy all contracts to Stellar Testnet
-bash ./scripts/deploy.sh testnet
+STELLAR_LIVE_TESTS=1 cargo test -p stellar-rust-sdk --test integration_test
 ```
 
-### 3. Launch Interactive Documentation Site
+## Architecture
+
+```
+stellar_rust_sdk
+├── errors     SdkError taxonomy + Horizon result_codes parser
+├── address    StrKey G/S/C/M wrappers
+├── keypair    Ed25519 generate / seed import / sign
+├── network    Passphrases + SHA-256 network IDs
+├── horizon    Async REST client (accounts, assets, pools, submit)
+├── rpc        Soroban JSON-RPC (simulate, entries, events)
+├── tx         TransactionBuilder, operations, multi-sig XDR envelopes
+└── soroban    ContractInvoker pipeline (simulate → fee → sign → submit)
+```
+
+User-Agent on all HTTP/RPC traffic: `Astral-Stellar-Rust-SDK/{version}`.
+
+## Quick example
+
+```rust
+use stellar_rust_sdk::horizon::HorizonClient;
+use stellar_rust_sdk::keypair::Keypair;
+use stellar_rust_sdk::network::Network;
+use stellar_rust_sdk::tx::builder::TransactionBuilder;
+use stellar_rust_sdk::tx::envelope::TransactionEnvelope;
+use stellar_rust_sdk::tx::operations::Payment;
+use stellar_rust_sdk::tx::xlm_to_stroops;
+
+# async fn demo() -> Result<(), stellar_rust_sdk::SdkError> {
+let source = Keypair::random()?;
+let dest = Keypair::random()?;
+let client = HorizonClient::testnet()?;
+let account = client.accounts().account(source.public_key().as_str()).await?;
+let tx = TransactionBuilder::new(source.public_key().clone(), account.sequence_number()?)
+    .add_operation(Payment::native(dest.public_key(), xlm_to_stroops(1)))
+    .build()?;
+let envelope = TransactionEnvelope::new(tx).signed(&source, &Network::Testnet)?;
+client.submit_transaction(&envelope.to_base64_xdr()).await?;
+# Ok(())
+# }
+```
+
+Runnable copies live in [`examples/transfer_tokens.rs`](examples/transfer_tokens.rs) and [`examples/invoke_soroban.rs`](examples/invoke_soroban.rs).
+
+## Workspace members
+
+The repository also contains reusable Soroban contracts:
+
+| Path | Role |
+| --- | --- |
+| `contracts/access-control` | Role-based permissions |
+| `contracts/vesting` | Linear / cliff vesting |
+| `contracts/multisig` | Threshold vault |
+| `contracts/splitter` | Revenue split (Drips-compatible) |
 
 ```bash
-pnpm install
-pnpm dev:docs
+cargo test --workspace
+cargo build --workspace --exclude stellar-rust-sdk --target wasm32-unknown-unknown --release
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the API documentation and interactive playground.
+## Grantfox & Drips
 
----
+- **Grantfox** bounties: issues tagged `bounty` / `grantfox`. See [`.github/ISSUE_TEMPLATE/bounty-issue.md`](.github/ISSUE_TEMPLATE/bounty-issue.md).
+- **Drips** streaming: [drips.network](https://drips.network). The on-chain splitter lives in `contracts/splitter`.
 
-## 🦊 Grantfox Bounties & Contribution Rules
+## License
 
-We actively fund open-source development through **Grantfox** bounties!
-
-1. **Browse Bounties**: Look for issues tagged with `bounty` or `grantfox` in the issue tracker.
-2. **Submit a Proposal**: Comment on the issue stating your proposed timeline and approach.
-3. **Submit a PR**:
-   - Ensure `cargo test` passes cleanly.
-   - Include unit tests in `src/test.rs` for any new logic.
-   - Follow `#![no_std]` compliance.
-4. **Get Paid**: Upon PR review and approval, bounties are released directly to your Stellar account!
-
-See [.github/ISSUE_TEMPLATE/bounty-issue.md](.github/ISSUE_TEMPLATE/bounty-issue.md) for bounty issue definitions.
-
----
-
-## 💧 Drips Streaming & Sustained Funding
-
-`stellar-primitives` leverages **Drips** to split continuous revenue streams among contributors and open-source dependencies.
-
-- Learn more about continuous funding on [Drips Network](https://drips.network).
-- View the splitter contract implementation at [`contracts/splitter`](contracts/splitter).
-
----
-
-## 🛡️ License
-
-Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or [MIT License](LICENSE-MIT) at your option.
+Licensed under either of Apache License 2.0 or MIT at your option.

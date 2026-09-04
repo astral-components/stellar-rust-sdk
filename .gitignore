@@ -20,3 +20,12 @@ dist/
 .stellar/
 identity.json
 *.wasm
+*.key
+.env
+.env.*
+!env.example
+
+# Generated docs
+/docs/book/
+_final_snapshot/
+target-gnu/
