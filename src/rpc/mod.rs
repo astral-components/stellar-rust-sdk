@@ -1,10 +1,12 @@
 //! Soroban JSON-RPC client (Stellar RPC).
 
 mod client;
+mod entries;
 mod simulate;
 mod types;
 
 pub use client::RpcClient;
+pub use entries::{LedgerEntry, LedgerKey};
 pub use simulate::{RestorePreamble, SimulateResponse, SimulateTransactionResult};
 pub use types::{
     GetHealthResponse, GetLatestLedgerResponse, GetNetworkResponse, RpcError, RpcRequest,
