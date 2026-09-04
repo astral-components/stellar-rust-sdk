@@ -4,6 +4,7 @@ mod accounts;
 mod assets;
 mod client;
 mod pools;
+mod submit;
 
 pub use accounts::{
     Account, AccountFlags, AccountSigner, AccountsRequestBuilder, Balance, HorizonAccountResponse,
@@ -12,6 +13,7 @@ pub use accounts::{
 pub use assets::{AssetRecord, AssetsRequestBuilder, HorizonAsset};
 pub use client::{HorizonClient, HorizonClientBuilder};
 pub use pools::{LiquidityPool, LiquidityPoolReserve, PoolsRequestBuilder};
+pub use submit::{SubmitResponse, SubmitResultCodes};
 
 /// Official Horizon base URL for the Stellar Public Network.
 pub const PUBLIC_URL: &str = "https://horizon.stellar.org";
